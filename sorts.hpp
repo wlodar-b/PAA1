@@ -66,5 +66,51 @@ void mergeSort(T* array, int left, int right, bool ascending = true) {
     }
 }
 
+// Funkcja dzieląca tablice wokół elementu osiowego (pivota)
+template <typename T>
+int partition(T* array, int left, int right, bool ascending) {
+    // Wybieramy środkowy element jako pivot
+    // Instrukcja ostrzega, że wybór pierwszego elementu jest zły dla posortowanych tablic!
+    int mid = left + (right - left) / 2;
+    T pivot = array[mid];
+
+    int i = left -1;
+    int j = right +1;
+
+    while (true) {
+        if (ascending) {
+            // Szukamy elementu po lewej, który jest większy/równy pivotowi
+            do { i++; } while (array[i] < pivot);
+            // Szukamy elementu po prawej, który jest mniejszy/równy pivotowi
+            do { j--; } while (array[j] > pivot);
+        } else {
+            // Analogicznie dla sortowania malejącego
+            do { i++; } while (array[i] > pivot);
+            do { j--; } while (array[j] < pivot);
+        }
+
+        // Jeśli wskaźniki się mineły, kończymy podział i zwracamy miejsce podziału
+        if (i >= j) return j;
+
+        // Zamieniamy miejscami elementy, które znalazły się po złej stronie pivota
+        T temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
+}
+
+// Główna funkcja rekurencyjna Quicksort
+template <typename T>
+void quickSort(T* array, int left, int right, bool ascending = true) {
+    if (left < right) {
+        // Dzielimy tablicę i pobieramy indeks podziału
+        int pivotIndex = partition(array, left, right, ascending);
+
+        // Wywołujemy Quicksort dla lewej i prawej części
+        quickSort(array, left, pivotIndex, ascending);
+        quickSort(array, pivotIndex + 1, right, ascending);
+    }
+}
 
 #endif // SORTS_HPP
