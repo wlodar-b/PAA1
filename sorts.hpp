@@ -1,5 +1,7 @@
 #ifndef SORTS_HPP
 #define SORTS_HPP
+#include <cmath>     // Do wyliczania logarytmu dla limitu głębokości
+#include <algorithm> // Do głównej funkcji zamiany miejscami: std::swap
 
 // Funkcja pomocnicza, która "scala" dwie posortowane połówki w jedną całość
 template <typename T>
@@ -110,6 +112,82 @@ void quickSort(T* array, int left, int right, bool ascending = true) {
         // Wywołujemy Quicksort dla lewej i prawej części
         quickSort(array, left, pivotIndex, ascending);
         quickSort(array, pivotIndex + 1, right, ascending);
+    }
+}
+
+// --- FUNKCJE POMOCNICZE DLA KOPCOWANIA (HEAPSORT) ---
+
+// Funkcja naprawiająca kopiec (przywracanie własności kopca)
+template <typename T>
+void heapify(T* array, int n, int i, int offset, bool ascending) {
+    int extreme = i; // W zależności od kierunku to będzie największy lub najminiejszy element
+    int left = 2 * i + 1;
+    int right = 2 * i + 2;
+    
+    // Uwzględniamy "offset", bo sortujemy tylko wycinek tablicy, a nie calą od zera
+    int actual_root = offset + i;
+    int actual_left = offset + left;
+    int actual_right = offset + right;
+
+    if (ascending) {
+        if (left < n && array[actual_left] > array[offset + extreme]) extreme = left;
+        if (right < n && array[actual_right] > array[offset + extreme]) extreme = right;
+    } else {
+        if (left < n && array[actual_left] < array[offset + extreme]) extreme = left;
+        if (right < n &&  array[actual_right] < array[offset + extreme]) extreme = right;
+    }
+
+    // Jeśli korzeń nie jest ekstremum, zamieniamy go z dzieckiem i naprawiamy dalej w dół
+    if (extreme != i) {
+        std::swap(array[actual_root], array[offset + extreme]);
+        heapify(array, n, extreme, offset, ascending);
+    }
+}
+
+// Funkcja sortująca przez kopcowanie zadany fragment tablicy
+template <typename T>
+void heapSortPart(T* array, int left, int right, bool ascending) {
+    int n = right - left + 1;
+    
+    // Budowanie kopca z sortowanej tablicy 
+    for (int i = n -1; i > 0; i--) {
+        std::swap(array[left], array[left + i]);
+        heapify(array, i, 0, left, ascending);
+    }
+}
+
+// --- GŁÓWNA LOGIKA INTROSORTA ---
+
+// Funkcja rekurencyjna pilnująca głębokości
+template <typename T>
+void introSortUtil(T* array, int left, int right, int depthLimit, bool ascending) {
+    int size = right - left +1;
+    if (size <= 1) return;
+
+    // MAGIA INTROSORTA: Jeśli limit głebokości osiągnął 0, ratujemy się kopcowaniem
+    if (depthLimit == 0) {
+        heapSortPart(array, left, right, ascending);
+        return;
+    }
+
+    // Jeśli limit pozwala, kontynuujemy podział jak w zwykłym Quicksort
+    // Wykorzystujemy naszą funkcję 'partition', którą napisaliśmy wcześniej
+    int pivotIndex = partition(array, left, right, ascending);
+
+    // Wywołujemy dalej, ZMNIEJSZAJĄC limit głębokości o 1 w każdym kroku
+    introSortUtil(array, left, pivotIndex, depthLimit - 1, ascending);
+    introSortUtil(array, pivotIndex + 1, right, depthLimit - 1, ascending);
+}
+
+// Główna funkcja Introsort wywoływana przez użytkownika
+template <typename T> 
+void introSort(T* array, int left, int right, bool ascending = true) {
+    if (left < right) {
+        int n = right - left + 1;
+        // Matematyczny wzór na optymalny limit głębokości: 2 * log2(N)
+        int depthLimit = 2 * std::log(n) / std::log(2);
+
+        introSortUtil(array, left, depthLimit, ascending);
     }
 }
 
