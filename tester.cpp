@@ -46,7 +46,36 @@ void Tester::runAllTests() {
             // Test Merge Sort
             copyArray(original, copy, size);
             auto start = std::chrono::high_resolution_clock::now();
-            
+            mergeSort(copy, 0, size -1, true);
+            auto end = std::chrono::high_resolution_clock::now();
+            totalTimeMerge += std::chrono::duration<double, std::milli>(end - start).count();
+
+            // Test Quicksort
+            copyArray(original, copy, size);
+            start = std::chrono::high_resolution_clock::now();
+            quickSort(copy, 0, size -1, true);
+            end = std::chrono::high_resolution_clock::now();
+            totalTimeQuick += std::chrono::duration<double, std::milli>(end - start).count();
+
+            // Test Introsort
+            copyArray(original, copy, size);
+            start = std::chrono::high_resolution_clock::now();
+            introSort(copy, 0, size - 1, true);
+            end = std::chrono::high_resolution_clock::now();
+            totalTimeQuick += std::chrono::duration<double, std::milli>(end - start).count();
+
+            // Sprzątanie pamięci
+            delete[] original;
+            delete[] copy;
         }
+
+        // Zapis do pliku (średni czas to totalTime / 100)
+        file << size << ",Losowe,MergeSort," << (totalTimeMerge / arraysPerCase) << "\n";
+        file << size << ",Losowe,QuickSort," << (totalTimeQuick / arraysPerCase) << "\n";
+        file << size << ",Losowe,IntroSort," << (totalTimeIntro / arraysPerCase) << "\n";
+
     }
+
+    file.close();
+    std::cout << "Testy zakonczone sukcesem! Wyniki zapisano w wyniki.csv" << std::endl;
 }
